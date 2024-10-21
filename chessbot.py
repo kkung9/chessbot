@@ -31,7 +31,17 @@ turn = 0
 while not board.is_checkmate():
     if turn % 2 == mod: # computer's turn
         uci_moves = list(board.legal_moves)
-        move = random.choice(uci_moves)
+        cap_list = []
+        # go through moves and check for captures
+        for move in uci_moves:
+            if board.is_capture(move):
+                cap_list.append(move)
+        # if no captures, choose random
+        if len(cap_list)==0:
+            move = random.choice(uci_moves)
+        # if captures, select from list
+        else:
+            move = random.choice(cap_list)
         board.push_san(str(chess.Move.from_uci(str(move))))
         print("Bot (as " + bot + "): " + str(move))
     else: # player's turn
@@ -47,3 +57,5 @@ while not board.is_checkmate():
     print("New FEN position: " + str(board.fen()))
     print(board)
     turn += 1
+# output a message and quit
+# say winner
