@@ -1,6 +1,9 @@
 import chess
 import datetime
 import random
+import re
+
+uci_pattern = re.compile("[a-h][0-8][a-h][0-8]")
 
 print("Time: " + str(datetime.datetime.now()))
 color = ""
@@ -17,18 +20,25 @@ while color != "b" and color != "w":
     else:
         print("Enter b or w")
 
-position = input("Starting FEN position? (hit ENTER for standard starting postion): ")
-board = chess.Board()
-if position == "":
-    pass
-else:
-    board.set_fen(position)
-    print(board)
-# deal with case in which position is invalid
+position = None
+while position == None:
+    position = input("Starting FEN position? (hit ENTER for standard starting postion): ")
+    board = chess.Board()
+    if position == "":
+        pass
+    else:
+        try:
+            board.set_fen(position)
+            assert board.is_valid()
+        except:
+            print("Invalid FEN position")
+            position = None
+# print(board)
 
 turn = 0
 # check that it ends when it is checkmate
 while not board.is_checkmate():
+    print(board.is_checkmate())
     if turn % 2 == mod: # computer's turn
         uci_moves = list(board.legal_moves)
         cap_list = []
@@ -46,11 +56,10 @@ while not board.is_checkmate():
         print("Bot (as " + bot + "): " + str(move))
     else: # player's turn
         leg_moves = list(board.legal_moves)
-        print(leg_moves)
         move = input(player + ": ")
-        # check if in legal moves
-        while chess.Move.from_uci(move) not in board.legal_moves:
-            print("Try again.")
+        while not uci_pattern.match(move) or chess.Move.from_uci(move) not in board.legal_moves:
+            print("Try again. Your valid moves are:")
+            print(list(board.legal_moves))
             move = input(player + ": ")
         board.push_san(str(chess.Move.from_uci(move)))
         
