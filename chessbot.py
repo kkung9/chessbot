@@ -5,55 +5,59 @@ import re
 
 
 def scoreMove(board, move):
-    #return the chess piece value for the move: https://www.chess.com/terms/chess-piece-value
     if board.is_capture(move):
         if board.is_en_passant(move):
             return 1
         else:
-            pieceTaken = board.piece_at(move.to_square).piece_type
-            match pieceTaken:
-                case chess.PAWN:
-                    return 1
-                case chess.KNIGHT:
-                    return 3
-                case chess.BISHOP:
-                    return 3
-                case chess.ROOK:
-                    return 5
-                case chess.QUEEN:
-                    return 9
-    else:
-        return 0
+            piece_taken = board.piece_at(move.to_square)
+            if piece_taken is not None:
+                match piece_taken.piece_type:
+                    case chess.PAWN:
+                        return 1
+                    case chess.KNIGHT:
+                        return 3
+                    case chess.BISHOP:
+                        return 3
+                    case chess.ROOK:
+                        return 5
+                    case chess.QUEEN:
+                        return 9
+    return 0
 
-def maxMove(board, uci_moves, bestScore):
-    copyBoard = board.copy()
-    bestScore = -10000000000
+def maxMove(board, depth):
+    # base case
+    if depth == 0 or board.is_game_over():
+            return None, scoreMove(board, board.peek()) 
+    #else
+    bestScore = float('-inf')
     bestMove = None
-    print(uci_moves)
-    for move in uci_moves:
-        #if scoreMove(copyBoard, move) > bestScore:
-            #bestScore = scoreMove(copyBoard, move)
-            #bestMove = move
-        score = scoreMove(copyBoard, move)
-        score = minMove(board, uci_moves, score)
-        if scoreMove(copyBoard, move) > bestScore:
-            bestScore = scoreMove(copyBoard, move)
+    for move in board.legal_moves:
+        #print(board.legal_moves)
+        board.push(move)
+        _, score = minMove(board, depth-1)
+        board.pop()
+        if score > bestScore:
+            bestScore = score
             bestMove = move
-    print(bestMove)
     return bestMove, bestScore
 
 
-def minMove(board, uci_moves, bestScore):
-    copyBoard = board.copy()
-    #bestScore = 10000000000
+def minMove(board, depth):
+   # base case
+    if depth == 0 or board.is_game_over():
+        return None, scoreMove(board, board.peek()) 
+    # else
+    bestScore = float('inf')
     bestMove = None
-    print(uci_moves)
-    for move in uci_moves:
-        if scoreMove(copyBoard, move) < bestScore:
-            bestScore =  - scoreMove(copyBoard, move)
+    for move in board.legal_moves:
+        board.push(move)
+        _, score = maxMove(board, depth-1)
+        # undoes change
+        board.pop()
+        # compare the scores 
+        if score < bestScore:
+            bestScore = score
             bestMove = move
-    print(bestMove)
-    
     return bestMove, bestScore
 
 
@@ -101,10 +105,10 @@ def main():
     while not board.is_checkmate():
         if turn % 2 == mod: # computer's turn
             uci_moves = list(board.legal_moves)
-            move, score = maxMove(board, uci_moves)
-
+            move, score = maxMove(board, 3)
+            print(score)
             # make the mvoe
-            board.push_san(str(chess.Move.from_uci(str(move))))
+            board.push(move)
             print("Bot (as " + bot + "): " + str(move))
         else: # player's turn
             leg_moves = list(board.legal_moves)
@@ -114,7 +118,7 @@ def main():
                 print(list(board.legal_moves))
                 move = input(player + ": ")
             # make the move
-            board.push_san(str(chess.Move.from_uci(move)))
+            board.push(chess.Move.from_uci(move))
             
         print("New FEN position: " + str(board.fen()))
         print(board)
