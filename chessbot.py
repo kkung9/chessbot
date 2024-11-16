@@ -24,17 +24,17 @@ def scoreMove(board, move):
                         return 9
     return 0
 
-def maxMove(board, depth):
+def maxMove(board, depth, prevScore):
     # base case
-    if depth == 0 or board.is_game_over():
-            return None, scoreMove(board, board.peek()) 
+    if depth < 0 or board.is_game_over():
+        return None, 0
     #else
-    bestScore = float('-inf')
+    bestScore = float("-inf")
     bestMove = None
     for move in board.legal_moves:
-        #print(board.legal_moves)
+        moveScore = scoreMove(board, move)
         board.push(move)
-        _, score = minMove(board, depth-1)
+        score = minMove(board, depth-1, moveScore)[1] + prevScore
         board.pop()
         if score > bestScore:
             bestScore = score
@@ -42,16 +42,17 @@ def maxMove(board, depth):
     return bestMove, bestScore
 
 
-def minMove(board, depth):
+def minMove(board, depth, prevScore):
    # base case
-    if depth == 0 or board.is_game_over():
-        return None, scoreMove(board, board.peek()) 
+    if depth < 0 or board.is_game_over():
+        return None, 0
     # else
-    bestScore = float('inf')
+    bestScore = float("inf")
     bestMove = None
     for move in board.legal_moves:
+        moveScore = - scoreMove(board, move)
         board.push(move)
-        _, score = maxMove(board, depth-1)
+        score = maxMove(board, depth-1, moveScore)[1] + prevScore
         # undoes change
         board.pop()
         # compare the scores 
@@ -104,9 +105,8 @@ def main():
     turn = 0
     while not board.is_checkmate():
         if turn % 2 == mod: # computer's turn
-            uci_moves = list(board.legal_moves)
-            move, score = maxMove(board, 3)
-            print(score)
+            move, score = maxMove(board, 2, 0)
+            print("Best score: " + str(score))
             # make the mvoe
             board.push(move)
             print("Bot (as " + bot + "): " + str(move))
