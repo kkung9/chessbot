@@ -31,7 +31,9 @@ def maxMove(board, depth, prevScore):
     #else
     bestScore = float("-inf")
     bestMove = None
-    for move in board.legal_moves:
+    legalMoves = list(board.legal_moves)
+    random.shuffle(legalMoves)
+    for move in legalMoves:
         moveScore = scoreMove(board, move)
         board.push(move)
         score = minMove(board, depth-1, moveScore)[1] + prevScore
@@ -49,7 +51,9 @@ def minMove(board, depth, prevScore):
     # else
     bestScore = float("inf")
     bestMove = None
-    for move in board.legal_moves:
+    legalMoves = list(board.legal_moves)
+    random.shuffle(legalMoves)
+    for move in legalMoves:
         moveScore = - scoreMove(board, move)
         board.push(move)
         score = maxMove(board, depth-1, moveScore)[1] + prevScore
@@ -105,7 +109,7 @@ def main():
     turn = 0
     while not board.is_checkmate():
         if turn % 2 == mod: # computer's turn
-            move, score = maxMove(board, 2, 0)
+            move, score = maxMove(board, 3, 0)
             print("Best score: " + str(score))
             # make the mvoe
             board.push(move)
