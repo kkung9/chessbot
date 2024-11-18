@@ -10,6 +10,7 @@ def scoreMove(board, move):
             return 1
         else:
             piece_taken = board.piece_at(move.to_square)
+            # assign scores based on piece taken
             if piece_taken is not None:
                 match piece_taken.piece_type:
                     case chess.PAWN:
@@ -22,22 +23,30 @@ def scoreMove(board, move):
                         return 5
                     case chess.QUEEN:
                         return 9
+    # if no captures, score does not change
     return 0
 
 def maxMove(board, depth, prevScore):
     # base case
     if depth < 0 or board.is_game_over():
         return None, 0
-    #else
+    # else
+    # set low best score
     bestScore = float("-inf")
     bestMove = None
+    # shuffle all possible moves so it doesn't always do the same thing
     legalMoves = list(board.legal_moves)
     random.shuffle(legalMoves)
     for move in legalMoves:
+        # find the score of this move
         moveScore = scoreMove(board, move)
+        # simulate doing the move
         board.push(move)
+        # call the min function to find opponent's best move
         score = minMove(board, depth-1, moveScore)[1] + prevScore
+        # undoes change
         board.pop()
+        # compare scores of all possible next moves
         if score > bestScore:
             bestScore = score
             bestMove = move
@@ -51,15 +60,19 @@ def minMove(board, depth, prevScore):
     # else
     bestScore = float("inf")
     bestMove = None
+    # shuffle all possible moves so it doesn't always do the same thing
     legalMoves = list(board.legal_moves)
     random.shuffle(legalMoves)
     for move in legalMoves:
+        # find the score of this move and negate for the opponent
         moveScore = - scoreMove(board, move)
+        # simulate doing the move
         board.push(move)
+        # call the max function to find computers's best move
         score = maxMove(board, depth-1, moveScore)[1] + prevScore
         # undoes change
         board.pop()
-        # compare the scores 
+        # compare scores of all possible next moves
         if score < bestScore:
             bestScore = score
             bestMove = move
@@ -109,13 +122,13 @@ def main():
     turn = 0
     while not board.is_checkmate():
         if turn % 2 == mod: # computer's turn
+            # find the best move over a certain depth
             move, score = maxMove(board, 3, 0)
             print("Best score: " + str(score))
             # make the mvoe
             board.push(move)
             print("Bot (as " + bot + "): " + str(move))
         else: # player's turn
-            leg_moves = list(board.legal_moves)
             move = input(player + ": ")
             while not uci_pattern.match(move) or chess.Move.from_uci(move) not in board.legal_moves: # check that the move is valid
                 print("Try again. Your valid moves are:")
