@@ -42,7 +42,7 @@ def maxMove(board, depth, prevScore):
     random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move
-        moveScore = scoreMove(board, move)
+        moveScore = scoreMove(board, move) * depth/10
         # simulate doing the move
         board.push(move)
         # call the min function to find opponent's best move
@@ -68,7 +68,7 @@ def minMove(board, depth, prevScore):
     random.shuffle(legalMoves)
     for move in legalMoves:
         # find the score of this move and negate for the opponent
-        moveScore = - scoreMove(board, move)
+        moveScore = - scoreMove(board, move) * depth/10
         # simulate doing the move
         board.push(move)
         # call the max function to find computers's best move
